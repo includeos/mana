@@ -1,37 +1,32 @@
-cmake_minimum_required(VERSION 2.8.9)
-
-
+cmake_minimum_required(VERSION 3.0)
+#TODO bump to a newer version that works with the below as minimum
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+#get arch the proper cmake way
+if (NOT DEFINED ARCH)
+  set(ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
+endif()
+
 add_definitions(-DARCH_${ARCH})
 add_definitions(-DARCH="${ARCH}")
 
-#include self
+#to run outside conan
+# the easy way
+# mkdir build && cd build
+# conan link .. mana/<version>@<user>/<channel> --layout=../layout.txt
+# conan install .. --no-imports <if not default profile add -pr conan_profile>
+# cmake ..
+# make 
+# hard way
+# create your own layout file and build out of tree in a different location
+# endif
+
+include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-if(CONAN_EXPORTED) # in conan local cache
-  # standard conan installation, deps will be defined in conanfile.py
-  # and not necessary to call conan again, conan is already running
-  include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-  conan_basic_setup()
-  #TODO get this from includeos package.. and not here!!
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../api)
-else(CONAN_EXPORTED)
-  include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-  conan_basic_setup()
-  #TODO get from conan the right include path
-  #include_directories()
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../api)
-  include_directories(${INCLUDEOS_ROOT}/api/posix)
-  include_directories(${INCLUDEOS_ROOT}/src/include)
-  include_directories(${INCLUDEOS_ROOT}/api)
-  set(INCLUDE_PREFIX "includeos/")
-  set(LIB_PREFIX "includeos/${ARCH}/")
-endif()
-
-
 
 set(MANA_OBJ
   src/request.cpp

@@ -1,6 +1,3 @@
-#README to build botan 2.8.0 use conan create (botan/2.8.0@user/channel) path to this file
-import shutil
-
 from conans import ConanFile,tools,CMake
 
 class ManaConan(ConanFile):
@@ -9,30 +6,32 @@ class ManaConan(ConanFile):
     license = 'Apache-2.0'
     description = 'Run your application with zero overhead'
     generators = 'cmake'
+    
     url = "http://www.includeos.org/"
+
     default_user="includeos"
     default_channel="test"
+    
+    no_copy_source=True
 
-    def build_requirements(self):
-        #TODO at some point put includeos as a dep for mana
-        #removing everything below
-        self.build_requires("libcxx/7.0.1@{}/{}".format(self.user,self.channel))
-        self.build_requires("rapidjson/1.1.0@{}/{}".format(self.user,self.channel))
-        self.build_requires("GSL/2.0.0@{}/{}".format(self.user,self.channel))
+    def requirements(self):
+        self.requires("includeos/0.14.0@{}/{}".format(self.user,self.channel))
 
     def source(self):
-        repo = tools.Git(folder="includeos")
-        repo.clone("https://github.com/hioa-cs/IncludeOS.git",branch="conan")
+        #TODO make the branch into a version tag ?
+        repo = tools.Git(folder="mana")
+        repo.clone("https://github.com/includeos/mana.git",branch="master")
 
     def _arch(self):
         return {
             "x86":"i686",
-            "x86_64":"x86_64"
+            "x86_64":"x86_64",
+            "armv8" : "aarch64"
         }.get(str(self.settings.arch))
     def _cmake_configure(self):
         cmake = CMake(self)
         cmake.definitions['ARCH']=self._arch()
-        cmake.configure(source_folder=self.source_folder+"/includeos/lib/mana")
+        cmake.configure(source_folder=self.source_folder+"/mana")
         return cmake
 
     def build(self):
