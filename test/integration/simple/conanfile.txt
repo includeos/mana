@@ -1,0 +1,10 @@
+[requires]
+mana/0.14.0@includeos/test
+
+[build_requires]
+vmbuild/0.13.0@includeos/test
+chainloader/0.14.0@includeos/test
+
+[generators]
+virtualenv
+cmake

@@ -32,5 +32,14 @@ pipeline {
 	sh script: "cd build; make -j $CPUS", label: "Make"
       }
     }
+    stage('build example') {
+      steps {
+      	sh script: "mkdir -p build_example", label: "Setup"
+	sh script: "cd build_example; conan install ../unit/integration/simple -pr $PROFILE_x86_64", label: "conan_install"
+	sh script: "cd build_example; source activate.sh; cmake ../unit/integration/simple", label: "cmake configure"
+	sh script: "cd build_example; source activate.sh; make", label: "build"
+      }
+    }
+
   }
 }
