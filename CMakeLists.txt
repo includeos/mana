@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 #TODO bump to a newer version that works with the below as minimum
+
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -18,13 +20,33 @@ add_definitions(-DARCH="${ARCH}")
 # conan link .. mana/<version>@<user>/<channel> --layout=../layout.txt
 # conan install .. --no-imports <if not default profile add -pr conan_profile>
 # cmake ..
-# make 
+# make
 # hard way
 # create your own layout file and build out of tree in a different location
 # endif
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+  include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+  conan_basic_setup()
+else()
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+  endif()
+  if (CONAN_PROFILE)
+    set(CONANPROFILE PROFILE ${CONAN_PROFILE})
+  endif()
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+     file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.13/conan.cmake"
+                   "${CMAKE_BINARY_DIR}/conan.cmake")
+  endif()
+  include(${CMAKE_BINARY_DIR}/conan.cmake)
+  conan_cmake_run(
+    CONANFILE conanfile.py
+    BASIC_SETUP
+    ${CONANPROFILE}
+  )
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

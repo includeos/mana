@@ -1,3 +1,2 @@
 [build_requires]
-includeos/0.14.0@includeos/test
 lest/[>=1.33.5]@includeos/test
