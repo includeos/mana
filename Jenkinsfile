@@ -28,7 +28,7 @@ pipeline {
       steps {
         sh script: "mkdir -p build", label: "Setup"
         sh script: "cd build; conan install .. -pr $PROFILE_x86_64", label: "conan install"
-        sh script: "cd build; cmake .. 
+        sh script: "cd build; cmake ..", label: "cmake configure" 
 	sh script: "cd build; make -j $CPUS", label: "Make"
       }
     }
