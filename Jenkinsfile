@@ -91,7 +91,7 @@ pipeline {
                 script: 'conan inspect -a version . | cut -d " " -f 2',
                 returnStdout: true
               ).trim()
-              sh script: "conan upload --all -r $REMOTE includeos/${version}@$USER/$CHAN", label: "Upload to bintray"
+              sh script: "conan upload --all -r ${env.CONAN_REMOTE} includeos/${version}@$USER/$CHAN", label: "Upload to bintray"
             }
           }
         }
