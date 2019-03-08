@@ -1,6 +1,12 @@
 pipeline {
   agent { label 'ubuntu-18.04' }
 
+  triggers {
+    upstream(
+      upstreamProjects: 'hioa-cs-org-test/IncludeOS/dev', threshold: hudson.model.Result.SUCCESS
+      )
+  }
+
   environment {
     PROFILE_x86_64 = 'clang-6.0-linux-x86_64'
     PROFILE_x86 = 'clang-6.0-linux-x86'
@@ -12,15 +18,9 @@ pipeline {
   }
 
   stages {
-    stage('Setup') {
-      steps {
-        sh 'mkdir -p install'
-      }
-    }
     stage('Pull Request pipeline') {
       when { changeRequest() }
       stages {
-
         stage('Unit tests') {
           steps {
             //cmake cache is bad
@@ -47,26 +47,14 @@ pipeline {
             build_conan_package("$PROFILE_x86_64")
           }
         }
-        //TODO if fail still perform delete
         stage('build example') {
           steps {
             sh script: "mkdir -p build_example", label: "Setup"
-    	    sh script: "cd build_example; conan install ../integration/simple -pr $PROFILE_x86_64 -u", label: "conan_install"
+            sh script: "cd build_example; conan install ../integration/simple -pr $PROFILE_x86_64 -u", label: "conan_install"
             sh script: "cd build_example; cmake ../integration/simple",label: "cmake configure"
             sh script: "cd build_example; make -j $CPUS", label: "building example"
             //sh script: "cd build_example; source activate.sh; cmake ../unit/integration/simple", label: "cmake configure"
-    	      //sh script: "cd build_example; source activate.sh; make", label: "build"
-          }
-        }
-        stage('Delete package') {
-          steps {
-            script {
-              def version = sh (
-                script: 'conan inspect -a version . | cut -d " " -f 2',
-                returnStdout: true
-                ).trim()
-                sh script: "conan remove mana/${version}@$USER/$CHAN -f",label: "removing conan package"
-            }
+            //sh script: "cd build_example; source activate.sh; make", label: "build"
           }
         }
       }
@@ -86,16 +74,21 @@ pipeline {
         }
         stage('Upload to bintray') {
           steps {
-            script {
-              def version = sh (
-                script: 'conan inspect -a version . | cut -d " " -f 2',
-                returnStdout: true
-              ).trim()
-              sh script: "conan upload --all -r $REMOTE includeos/${version}@$USER/$CHAN", label: "Upload to bintray"
-            }
+            sh script: """
+              VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
+              conan upload --all -r ${env.CONAN_REMOTE} includeos/\$VERSION@$USER/$CHAN
+            """, label: "Upload to bintray"
           }
         }
       }
+    }
+  }
+  post {
+    cleanup {
+      sh script: """
+        VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
+        conan remove mana/\$VERSION@$USER/$CHAN -f || echo 'Could not remove. This does not fail the pipeline'
+      """, label: "Cleaning up and removing conan package"
     }
   }
 }
