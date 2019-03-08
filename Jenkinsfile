@@ -52,22 +52,11 @@ pipeline {
         stage('build example') {
           steps {
             sh script: "mkdir -p build_example", label: "Setup"
-    	    sh script: "cd build_example; conan install ../integration/simple -pr $PROFILE_x86_64 -u", label: "conan_install"
+            sh script: "cd build_example; conan install ../integration/simple -pr $PROFILE_x86_64 -u", label: "conan_install"
             sh script: "cd build_example; cmake ../integration/simple",label: "cmake configure"
             sh script: "cd build_example; make -j $CPUS", label: "building example"
             //sh script: "cd build_example; source activate.sh; cmake ../unit/integration/simple", label: "cmake configure"
-    	      //sh script: "cd build_example; source activate.sh; make", label: "build"
-          }
-        }
-        stage('Delete package') {
-          steps {
-            script {
-              def version = sh (
-                script: 'conan inspect -a version . | cut -d " " -f 2',
-                returnStdout: true
-                ).trim()
-                sh script: "conan remove mana/${version}@$USER/$CHAN -f",label: "removing conan package"
-            }
+            //sh script: "cd build_example; source activate.sh; make", label: "build"
           }
         }
       }
@@ -97,6 +86,14 @@ pipeline {
           }
         }
       }
+    }
+  }
+  post {
+    cleanup {
+      sh script: """
+        VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
+        conan remove mana/\$VERSION@$USER/$CHAN -f || echo 'Could not remove. This does not fail the pipeline'
+      """, label: "Cleaning up and removing conan package"
     }
   }
 }
