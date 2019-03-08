@@ -21,7 +21,6 @@ pipeline {
     stage('Pull Request pipeline') {
       when { changeRequest() }
       stages {
-
         stage('Unit tests') {
           steps {
             //cmake cache is bad
@@ -48,7 +47,6 @@ pipeline {
             build_conan_package("$PROFILE_x86_64")
           }
         }
-        //TODO if fail still perform delete
         stage('build example') {
           steps {
             sh script: "mkdir -p build_example", label: "Setup"
@@ -76,13 +74,10 @@ pipeline {
         }
         stage('Upload to bintray') {
           steps {
-            script {
-              def version = sh (
-                script: 'conan inspect -a version . | cut -d " " -f 2',
-                returnStdout: true
-              ).trim()
-              sh script: "conan upload --all -r ${env.CONAN_REMOTE} includeos/${version}@$USER/$CHAN", label: "Upload to bintray"
-            }
+            sh script: """
+              VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
+              conan upload --all -r ${env.CONAN_REMOTE} includeos/\$VERSION@$USER/$CHAN
+            """, label: "Upload to bintray"
           }
         }
       }
