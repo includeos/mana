@@ -18,11 +18,6 @@ pipeline {
   }
 
   stages {
-    stage('Setup') {
-      steps {
-        sh 'mkdir -p install'
-      }
-    }
     stage('Pull Request pipeline') {
       when { changeRequest() }
       stages {
