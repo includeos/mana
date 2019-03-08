@@ -13,6 +13,7 @@ pipeline {
     CPUS = """${sh(returnStdout: true, script: 'nproc')}"""
     CC = 'clang-6.0'
     CXX = 'clang++-6.0'
+    PACKAGE = 'mana'
     USER = 'includeos'
     CHAN = 'test'
   }
@@ -76,7 +77,7 @@ pipeline {
           steps {
             sh script: """
               VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
-              conan upload --all -r ${env.CONAN_REMOTE} includeos/\$VERSION@$USER/$CHAN
+              conan upload --all -r ${env.CONAN_REMOTE} $PACKAGE/\$VERSION@$USER/$CHAN
             """, label: "Upload to bintray"
           }
         }
@@ -87,7 +88,7 @@ pipeline {
     cleanup {
       sh script: """
         VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
-        conan remove mana/\$VERSION@$USER/$CHAN -f || echo 'Could not remove. This does not fail the pipeline'
+        conan remove $PACKAGE/\$VERSION@$USER/$CHAN -f || echo 'Could not remove. This does not fail the pipeline'
       """, label: "Cleaning up and removing conan package"
     }
   }
