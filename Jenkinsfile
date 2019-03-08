@@ -1,6 +1,12 @@
 pipeline {
   agent { label 'ubuntu-18.04' }
 
+  triggers {
+    upstream(
+      upstreamProjects: 'hioa-cs-org-test/IncludeOS/dev', threshold: hudson.model.Result.SUCCESS
+      )
+  }
+
   environment {
     PROFILE_x86_64 = 'clang-6.0-linux-x86_64'
     PROFILE_x86 = 'clang-6.0-linux-x86'
