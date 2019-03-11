@@ -18,6 +18,7 @@ pipeline {
     USER = 'includeos'
     CHAN = 'test'
     REMOTE = "${env.CONAN_REMOTE}"
+    BINTRAY_CREDS = credentials('devops-includeos-user-pass-bintray')
   }
 
   stages {
@@ -83,6 +84,7 @@ pipeline {
         stage('Upload to bintray') {
           steps {
             sh script: """
+              conan user -p $BINTRAY_CREDS_PSW -r $REMOTE $BINTRAY_CREDS_USR
               VERSION=\$(conan inspect -a version . | cut -d " " -f 2)
               conan upload --all -r $REMOTE $PACKAGE/\$VERSION@$USER/$CHAN
             """, label: "Upload to bintray"
