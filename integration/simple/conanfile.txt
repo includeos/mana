@@ -1,8 +1,8 @@
 [requires]
-mana/[>=0.14.0,include_prerelease=True]@includeos/test
+mana/[>=0.14.0,include_prerelease=True]@includeos/latest
 
 [build_requires]
-vmbuild/0.13.0@includeos/test
+vmbuild/[>=0.14.0,include_prerelease=True]@includeos/latest
 
 [generators]
 virtualenv
