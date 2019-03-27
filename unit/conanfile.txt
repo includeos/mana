@@ -1,2 +1,2 @@
 [build_requires]
-lest/[>=1.33.5]@includeos/test
+lest/[>=1.33.5]@includeos/stable
