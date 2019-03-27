@@ -2,7 +2,7 @@
 mana/[>=0.14.0,include_prerelease=True]@includeos/latest
 
 [build_requires]
-vmbuild/0.13.0@includeos/latest
+vmbuild/[>=0.14.0,include_prerelease=True]@includeos/latest
 
 [generators]
 virtualenv
